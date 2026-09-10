@@ -1,0 +1,6 @@
+{
+  "name": "AI Builder",
+  "description": "AI App and Website Builder with High Thinking mode. Describe your idea, watch AI plan and code, preview live, and iterate.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
