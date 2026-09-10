@@ -84,9 +84,14 @@ function showCodeFile(file) {
 }
 
 function refreshPreview() {
-  const body = state.html || "";
-  const doc = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>" + (state.css || "") + "</style></head><body>" + body + "<script>" + (state.js || "") + "<\/script></body></html>";
-  $("#previewFrame").srcdoc = doc;
+  try {
+    var body = state.html || "";
+    var doc = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>" + (state.css || "") + "</style></head><body>" + body + "<script>" + (state.js || "") + "<\/script></body></html>";
+    var frame = $("#previewFrame");
+    if (frame) frame.srcdoc = doc;
+  } catch (e) {
+    console.error("preview error", e);
+  }
 }
 
 function loadTemplate(t) {
@@ -272,6 +277,11 @@ async function generate() {
 }
 
 function boot() {
+  try {
+  if (!$("#btnGenerate") || !$("#previewFrame")) {
+    console.error("AI Builder: missing DOM nodes");
+    return;
+  }
   updateModelChip();
   showCodeFile("html");
   loadTemplate(TEMPLATES[0]);
@@ -338,9 +348,15 @@ function boot() {
 
   $("#btnCopyAll").onclick = async function() {
     var text = "/* HTML */\n" + state.html + "\n\n/* CSS */\n" + state.css + "\n\n/* JS */\n" + state.js;
-    await navigator.clipboard.writeText(text);
-    setStatus("Copied to clipboard");
+    try { await navigator.clipboard.writeText(text); setStatus("Copied to clipboard"); }
+    catch (e) { setStatus("Copy failed"); }
   };
+  } catch (err) {
+    console.error(err);
+    setStatus("Boot error");
+    var tl = document.getElementById("thinkingLog");
+    if (tl) tl.textContent = "Boot error: " + err.message;
+  }
 }
 
 if (document.readyState === "loading") {
