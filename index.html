@@ -1,138 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>AI Builder — Browser Studio</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>AI Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0b0f17;color:#f0f6fc;font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#131a26;border-bottom:1px solid #2b3648;flex-shrink:0}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#388bfd,#a371f7);display:grid;place-items:center;font-size:18px}
+.brand h1{font-size:15px;line-height:1.15}
+.brand p{font-size:11px;color:#9198a1}
+.actions{display:flex;gap:6px;overflow-x:auto}
+.btn{border:1px solid #2b3648;background:#1b2433;color:#f0f6fc;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn.primary{background:#388bfd;border-color:#388bfd;font-weight:600}
+.btn:active{opacity:.85}
+.tabs{display:flex;background:#131a26;border-bottom:1px solid #2b3648;flex-shrink:0;overflow-x:auto}
+.tab{background:none;border:none;color:#9198a1;padding:12px 16px;font-size:13px;border-bottom:2px solid transparent;cursor:pointer}
+.tab.on{color:#58a6ff;border-bottom-color:#58a6ff;font-weight:600}
+.stage{flex:1;min-height:0;position:relative;overflow:hidden}
+.panel{display:none;height:100%;flex-direction:column;overflow:hidden}
+.panel.on{display:flex}
+.preview-wrap{flex:1;background:#111;padding:10px;min-height:0}
+iframe{width:100%;height:100%;border:0;border-radius:10px;background:#fff}
+.code-tabs{display:flex;gap:4px;padding:8px;background:#131a26}
+.ctab{border:1px solid #2b3648;background:none;color:#9198a1;padding:6px 12px;border-radius:6px;font-size:12px}
+.ctab.on{border-color:#58a6ff;color:#58a6ff}
+textarea#ed{flex:1;width:100%;background:#0d1117;color:#e6edf3;border:0;padding:12px;font:13px/1.5 ui-monospace,Menlo,monospace;resize:none;outline:none}
+#think{flex:1;overflow:auto;padding:14px;font:13px/1.6 ui-monospace,monospace;color:#c9d1d9;white-space:pre-wrap;background:#0d1117}
+#versions{flex:1;overflow:auto;padding:14px}
+.vitem{background:#1b2433;border:1px solid #2b3648;border-radius:8px;padding:12px;margin-bottom:8px}
+.muted{color:#9198a1;font-size:12px}
+.bar{display:flex;gap:8px;padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:#131a26;border-top:1px solid #2b3648;flex-shrink:0;align-items:flex-end}
+#prompt{flex:1;background:#1b2433;border:1px solid #2b3648;color:#f0f6fc;border-radius:10px;padding:10px 12px;font-size:16px;resize:none;min-height:44px;outline:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:50}
+.modal.show{display:flex}
+.sheet{background:#131a26;border:1px solid #2b3648;border-radius:16px 16px 0 0;padding:18px;width:100%;max-height:85vh;overflow:auto;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.sheet h2{font-size:16px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.x{background:none;border:0;color:#9198a1;font-size:28px;line-height:1;padding:4px 8px}
+.card{background:#1b2433;border:1px solid #2b3648;border-radius:10px;padding:14px;margin-bottom:8px;cursor:pointer}
+.card:active,.card.on{border-color:#58a6ff}
+.card h3{font-size:14px}
+.card p{font-size:12px;color:#9198a1;margin-top:4px}
+label{display:block;font-size:12px;color:#9198a1;margin-bottom:12px}
+label input{display:block;width:100%;margin-top:4px;background:#1b2433;border:1px solid #2b3648;color:#fff;border-radius:8px;padding:10px 12px;font-size:16px}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#1b2433;border:1px solid #58a6ff;color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;display:none;z-index:60}
+</style>
 </head>
 <body>
-  <div id="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-icon">⚡</div>
-        <div>
-          <h1>AI Builder</h1>
-          <p class="subtitle">Browser Studio · High Thinking</p>
-        </div>
-      </div>
-      <div class="top-actions">
-        <button id="btnTemplates" class="btn ghost" title="Templates">Templates</button>
-        <button id="btnModels" class="btn ghost" title="Models">Models</button>
-        <button id="btnSettings" class="btn ghost" title="Settings">Settings</button>
-        <button id="btnExport" class="btn ghost" title="Export">Export</button>
-      </div>
-    </header>
-
-    <div class="main">
-      <aside class="sidebar">
-        <div class="model-chip" id="modelChip">
-          <span class="badge" id="modelBadge">120B NIM</span>
-          <span id="modelName">Nemotron 3 Super</span>
-        </div>
-        <div class="status" id="statusText">Ready</div>
-        <div class="viewport-switch">
-          <button data-vp="mobile" class="vp-btn">Mobile</button>
-          <button data-vp="tablet" class="vp-btn">Tablet</button>
-          <button data-vp="desktop" class="vp-btn active">Desktop</button>
-        </div>
-      </aside>
-
-      <section class="workspace">
-        <div class="tabs">
-          <button class="tab active" data-tab="preview">Preview</button>
-          <button class="tab" data-tab="code">Code</button>
-          <button class="tab" data-tab="thinking">Thinking</button>
-          <button class="tab" data-tab="versions">Versions</button>
-        </div>
-
-        <div class="tab-panels">
-          <div id="panel-preview" class="panel active">
-            <div class="preview-frame-wrap" id="previewWrap">
-              <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" title="Live Preview"></iframe>
-            </div>
-          </div>
-          <div id="panel-code" class="panel">
-            <div class="code-tabs">
-              <button class="code-tab active" data-file="html">HTML</button>
-              <button class="code-tab" data-file="css">CSS</button>
-              <button class="code-tab" data-file="js">JS</button>
-            </div>
-            <textarea id="codeEditor" spellcheck="false"></textarea>
-          </div>
-          <div id="panel-thinking" class="panel">
-            <pre id="thinkingLog" class="thinking-log">No reasoning yet. Submit a prompt to see High Thinking steps.</pre>
-          </div>
-          <div id="panel-versions" class="panel">
-            <div id="versionsList" class="versions-list">
-              <p class="muted">Versions will appear here after you generate.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="prompt-bar">
-          <textarea id="promptInput" placeholder="Describe the app or game you want… e.g. retro synth drum machine with neon pads" rows="2"></textarea>
-          <button id="btnGenerate" class="btn primary">Generate</button>
-          <button id="btnStop" class="btn danger hidden">Stop</button>
-        </div>
-      </section>
+<div id="app">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div><h1>AI Builder</h1><p>Browser Studio</p></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="bTpl">Templates</button>
+      <button class="btn" id="bModel">Models</button>
+      <button class="btn" id="bSet">Settings</button>
+      <button class="btn" id="bExp">Export</button>
     </div>
   </div>
-
-  <!-- Templates modal -->
-  <div id="modalTemplates" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>Quick Templates</h2>
-        <button class="close-modal" data-close="modalTemplates">×</button>
-      </div>
-      <div id="templatesGrid" class="templates-grid"></div>
-    </div>
+  <div class="tabs">
+    <button class="tab on" data-p="preview">Preview</button>
+    <button class="tab" data-p="code">Code</button>
+    <button class="tab" data-p="thinking">Thinking</button>
+    <button class="tab" data-p="versions">Versions</button>
   </div>
-
-  <!-- Models modal -->
-  <div id="modalModels" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>AI Engine</h2>
-        <button class="close-modal" data-close="modalModels">×</button>
+  <div class="stage">
+    <div class="panel on" id="p-preview"><div class="preview-wrap"><iframe id="frame" title="preview"></iframe></div></div>
+    <div class="panel" id="p-code">
+      <div class="code-tabs">
+        <button class="ctab on" data-f="html">HTML</button>
+        <button class="ctab" data-f="css">CSS</button>
+        <button class="ctab" data-f="js">JS</button>
       </div>
-      <div id="modelsList" class="models-list"></div>
+      <textarea id="ed" spellcheck="false"></textarea>
     </div>
+    <div class="panel" id="p-thinking"><pre id="think">Ready. Tap Templates or type a prompt and Generate.</pre></div>
+    <div class="panel" id="p-versions"><div id="versions"><p class="muted">No versions yet.</p></div></div>
   </div>
-
-  <!-- Settings modal -->
-  <div id="modalSettings" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>Settings</h2>
-        <button class="close-modal" data-close="modalSettings">×</button>
-      </div>
-      <label>NVIDIA NIM API Key
-        <input id="nvidiaKey" type="password" placeholder="nvapi-…" />
-      </label>
-      <label>NVIDIA Base URL
-        <input id="nvidiaUrl" type="text" placeholder="https://integrate.api.nvidia.com/v1" />
-      </label>
-      <label>Gemini API Key
-        <input id="geminiKey" type="password" placeholder="AIza…" />
-      </label>
-      <button id="btnSaveSettings" class="btn primary">Save</button>
-    </div>
+  <div class="bar">
+    <textarea id="prompt" rows="1" placeholder="Describe an app or game…"></textarea>
+    <button class="btn primary" id="bGen">Generate</button>
   </div>
+</div>
 
-  <!-- Export modal -->
-  <div id="modalExport" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>Export</h2>
-        <button class="close-modal" data-close="modalExport">×</button>
-      </div>
-      <button id="btnDownloadHtml" class="btn primary block">Download single HTML</button>
-      <button id="btnCopyAll" class="btn ghost block">Copy all code</button>
-    </div>
-  </div>
+<div class="modal" id="mTpl"><div class="sheet"><div class="row"><h2>Templates</h2><button class="x" data-c="mTpl">×</button></div><div id="tplList"></div></div></div>
+<div class="modal" id="mModel"><div class="sheet"><div class="row"><h2>Models</h2><button class="x" data-c="mModel">×</button></div><div id="modelList"></div></div></div>
+<div class="modal" id="mSet"><div class="sheet"><div class="row"><h2>Settings</h2><button class="x" data-c="mSet">×</button></div>
+<label>NVIDIA API Key<input id="nKey" type="password" placeholder="nvapi-…"/></label>
+<label>NVIDIA Base URL<input id="nUrl" type="text" placeholder="https://integrate.api.nvidia.com/v1"/></label>
+<label>Gemini API Key<input id="gKey" type="password" placeholder="AIza…"/></label>
+<button class="btn primary" id="bSave" style="width:100%">Save</button>
+</div></div>
+<div class="modal" id="mExp"><div class="sheet"><div class="row"><h2>Export</h2><button class="x" data-c="mExp">×</button></div>
+<button class="btn primary" id="bDl" style="width:100%;margin-bottom:8px">Download HTML</button>
+<button class="btn" id="bCopy" style="width:100%">Copy all code</button>
+</div></div>
+<div id="toast"></div>
 
-  <script src="app.js"></script>
+<script>
+(function(){
+  var MODELS=[
+    {id:"nvidia/nemotron-3-super-120b-a12b",name:"Nemotron 3 Super",badge:"120B",provider:"NVIDIA"},
+    {id:"meta/llama-3.3-70b-instruct",name:"Llama 3.3 70B",badge:"70B",provider:"NVIDIA"},
+    {id:"gemini-2.0-flash",name:"Gemini 2.0 Flash",badge:"GEMINI",provider:"GEMINI"}
+  ];
+  var TPL=[
+    {id:"habit",title:"Habit Tracker",desc:"Streaks + progress bar",
+     html:'<div class="app"><h1>🔥 StreakFlow</h1><div class="prog"><span id="pct">0%</span><div class="bar"><i id="bar"></i></div></div><div class="add"><input id="h" placeholder="New habit"><button id="a">Add</button></div><ul id="list"></ul></div>',
+     css:'body{margin:0;font-family:system-ui;background:#0d1117;color:#f0f6fc;padding:16px}.app{max-width:420px;margin:auto}h1{font-size:22px;margin:0 0 14px}.prog{background:#161b22;border-radius:12px;padding:12px;margin-bottom:12px}.bar{height:8px;background:#30363d;border-radius:4px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#3fb950}.add{display:flex;gap:8px;margin-bottom:12px}input{flex:1;background:#161b22;border:1px solid #30363d;color:#fff;padding:10px;border-radius:8px}button{background:#388bfd;border:0;color:#fff;padding:10px 14px;border-radius:8px}ul{list-style:none;padding:0}li{display:flex;gap:10px;align-items:center;background:#161b22;border:1px solid #30363d;padding:12px;border-radius:10px;margin-bottom:8px}li.done span{opacity:.5;text-decoration:line-through}',
+     js:'var L=document.getElementById("list"),H=document.getElementById("h"),P=document.getElementById("pct"),B=document.getElementById("bar");var items=JSON.parse(localStorage.getItem("s")||"[]");function save(){localStorage.setItem("s",JSON.stringify(items));draw()}function draw(){L.innerHTML="";var d=0;items.forEach(function(it,i){if(it.done)d++;var li=document.createElement("li");if(it.done)li.className="done";li.innerHTML="<input type=checkbox "+(it.done?"checked":"")+" data-i="+i+"><span>"+it.text+"</span>";L.appendChild(li)});var p=items.length?Math.round(d/items.length*100):0;P.textContent=p+"%";B.style.width=p+"%";L.querySelectorAll("input").forEach(function(c){c.onchange=function(e){items[+e.target.dataset.i].done=e.target.checked;save()}})}document.getElementById("a").onclick=function(){var t=H.value.trim();if(!t)return;items.push({text:t,done:false});H.value="";save()};draw();',
+     think:"Habit tracker with localStorage and progress bar."},
+    {id:"pong",title:"Neon Pong",desc:"Classic pong game",
+     html:'<canvas id="c" width="640" height="360" style="width:100%;background:#05010a"></canvas><p style="text-align:center;color:#0ff;font-family:monospace">W/S · Arrows · Space</p><p id="sc" style="text-align:center;color:#0ff;font-size:22px;font-family:monospace">0 — 0</p>',
+     css:'body{margin:0;background:#05010a;color:#0ff}',
+     js:'var c=document.getElementById("c"),x=c.getContext("2d"),p1=120,p2=120,b={x:320,y:180,vx:4,vy:3},s1=0,s2=0,run=0,keys={};onkeydown=function(e){keys[e.key]=1};onkeyup=function(e){keys[e.key]=0};onkeypress=function(e){if(e.code==="Space")run=1};function loop(){if(keys.w||keys.W)p1-=5;if(keys.s||keys.S)p1+=5;if(keys.ArrowUp)p2-=5;if(keys.ArrowDown)p2+=5;p1=Math.max(0,Math.min(300,p1));p2=Math.max(0,Math.min(300,p2));if(run){b.x+=b.vx;b.y+=b.vy;if(b.y<0||b.y>360)b.vy*=-1;if(b.x<20&&b.y>p1&&b.y<p1+60)b.vx=Math.abs(b.vx);if(b.x>620&&b.y>p2&&b.y<p2+60)b.vx=-Math.abs(b.vx);if(b.x<0){s2++;reset()}if(b.x>640){s1++;reset()}}x.fillStyle="#05010a";x.fillRect(0,0,640,360);x.fillStyle="#0ff";x.fillRect(10,p1,10,60);x.fillRect(620,p2,10,60);x.beginPath();x.arc(b.x,b.y,8,0,7);x.fill();document.getElementById("sc").textContent=s1+" — "+s2;requestAnimationFrame(loop)}function reset(){b={x:320,y:180,vx:4*(Math.random()>.5?1:-1),vy:3};run=0}loop();',
+     think:"Canvas pong with keyboard controls."},
+    {id:"notes",title:"Markdown Notes",desc:"Live preview notes",
+     html:'<div style="display:grid;grid-template-columns:1fr 1fr;height:100vh"><textarea id="md" style="padding:16px;background:#010409;color:#e6edf3;border:0;border-right:1px solid #30363d;font:14px monospace;resize:none"></textarea><div id="pv" style="padding:16px;overflow:auto;background:#0d1117;color:#e6edf3"></div></div>',
+     css:'body{margin:0;height:100vh;background:#0d1117}',
+     js:'var md=document.getElementById("md"),pv=document.getElementById("pv");md.value=localStorage.getItem("md")||"# Hello\\n\\nWrite **markdown**.";function r(){var t=md.value.replace(/^### (.*$)/gim,"<h3>$1</h3>").replace(/^## (.*$)/gim,"<h2>$1</h2>").replace(/^# (.*$)/gim,"<h1>$1</h1>").replace(/\\*\\*(.*?)\\*\\*/g,"<b>$1</b>").replace(/\\*(.*?)\\*/g,"<i>$1</i>").replace(/\\n/g,"<br>");pv.innerHTML=t;localStorage.setItem("md",md.value)}md.oninput=r;r();',
+     think:"Split markdown editor with autosave."},
+    {id:"pomo",title:"Pomodoro",desc:"25/5 focus timer",
+     html:'<div style="max-width:300px;margin:40px auto;text-align:center;background:#131a26;border:1px solid #2b3648;border-radius:16px;padding:28px"><h1>Pomodoro</h1><div id="t" style="font-size:52px;font-weight:700;margin:12px 0">25:00</div><div id="m" style="color:#58a6ff;letter-spacing:2px">FOCUS</div><div style="margin:18px 0;display:flex;gap:10px;justify-content:center"><button id="s" style="background:#388bfd;border:0;color:#fff;padding:10px 18px;border-radius:8px">Start</button><button id="r" style="background:#21262d;border:0;color:#fff;padding:10px 18px;border-radius:8px">Reset</button></div><p>Sessions: <span id="n">0</span></p></div>',
+     css:'body{margin:0;background:#0b0f17;color:#f0f6fc;font-family:system-ui}',
+     js:'var left=25*60,tm=null,focus=1,sess=0,el=function(i){return document.getElementById(i)};function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}function tick(){if(left<=0){if(focus){sess++;el("n").textContent=sess;focus=0;left=5*60;el("m").textContent="BREAK"}else{focus=1;left=25*60;el("m").textContent="FOCUS"}}left--;el("t").textContent=fmt(left)}el("s").onclick=function(){if(tm){clearInterval(tm);tm=null;el("s").textContent="Start"}else{tm=setInterval(tick,1000);el("s").textContent="Pause"}};el("r").onclick=function(){clearInterval(tm);tm=null;focus=1;left=25*60;el("t").textContent="25:00";el("m").textContent="FOCUS";el("s").textContent="Start"};',
+     think:"Pomodoro 25/5 with session counter."}
+  ];
+
+  var S={
+    model:MODELS[0],
+    nKey:localStorage.getItem("nKey")||"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",
+    nUrl:localStorage.getItem("nUrl")||"https://integrate.api.nvidia.com/v1",
+    gKey:localStorage.getItem("gKey")||"",
+    html:"",css:"",js:"",think:"",file:"html",versions:[],busy:false,ac:null
+  };
+
+  function $(id){return document.getElementById(id)}
+  function toast(m){var t=$("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800)}
+
+  function showPanel(name){
+    document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.dataset.p===name)});
+    document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="p-"+name)});
+  }
+  function showFile(f){
+    S.file=f;
+    document.querySelectorAll(".ctab").forEach(function(t){t.classList.toggle("on",t.dataset.f===f)});
+    $("ed").value=S[f]||"";
+  }
+  function preview(){
+    var doc="<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><style>"+(S.css||"")+"</style></head><body>"+(S.html||"")+"<script>"+(S.js||")")+"<\/script></body></html>";
+    // fix accidental paren from empty js
+    doc=doc.replace("<script>)<\/script>","<script><\/script>");
+    $("frame").srcdoc=doc;
+  }
+  function loadTpl(t){
+    S.html=t.html;S.css=t.css;S.js=t.js;S.think=t.think||"";
+    $("think").textContent=S.think;
+    showFile(S.file);preview();
+    pushVer("Template: "+t.title);
+    toast("Loaded "+t.title);
+    $("mTpl").classList.remove("show");
+  }
+  function pushVer(label){
+    S.versions.unshift({label:label,html:S.html,css:S.css,js:S.js,think:S.think,time:new Date().toLocaleString()});
+    renderVer();
+  }
+  function renderVer(){
+    var box=$("versions");
+    if(!S.versions.length){box.innerHTML='<p class="muted">No versions yet.</p>';return}
+    box.innerHTML=S.versions.map(function(v,i){
+      return '<div class="vitem" data-i="'+i+'"><strong>'+v.label+'</strong><br><span class="muted">'+v.time+'</span></div>';
+    }).join("");
+    box.querySelectorAll(".vitem").forEach(function(el){
+      el.onclick=function(){
+        var v=S.versions[+el.dataset.i];
+        S.html=v.html;S.css=v.css;S.js=v.js;S.think=v.think;
+        $("think").textContent=v.think||"";showFile(S.file);preview();toast("Restored");
+      };
+    });
+  }
+  function renderTpl(){
+    $("tplList").innerHTML=TPL.map(function(t){
+      return '<div class="card" data-id="'+t.id+'"><h3>'+t.title+'</h3><p>'+t.desc+'</p></div>';
+    }).join("");
+    $("tplList").querySelectorAll(".card").forEach(function(c){
+      c.onclick=function(){loadTpl(TPL.find(function(t){return t.id===c.dataset.id}))};
+    });
+  }
+  function renderModels(){
+    $("modelList").innerHTML=MODELS.map(function(m){
+      return '<div class="card '+(m.id===S.model.id?"on":"")+'" data-id="'+m.id+'"><h3>'+m.name+' · '+m.badge+'</h3><p>'+m.provider+'</p></div>';
+    }).join("");
+    $("modelList").querySelectorAll(".card").forEach(function(c){
+      c.onclick=function(){S.model=MODELS.find(function(m){return m.id===c.dataset.id});renderModels();$("mModel").classList.remove("show");toast(S.model.name)};
+    });
+  }
+
+  function sys(){return "You are an expert web builder. Reply ONLY with JSON keys thinking, html, css, js. Vanilla JS, dark UI, self-contained."}
+
+  async function callNvidia(prompt){
+    var url=(S.nUrl||"").replace(/\/$/,"")+"/chat/completions";
+    var res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.nKey},
+      body:JSON.stringify({model:S.model.id,messages:[{role:"system",content:sys()},{role:"user",content:prompt}],temperature:0.4,max_tokens:4096}),
+      signal:S.ac?S.ac.signal:undefined});
+    if(!res.ok) throw new Error("NVIDIA "+res.status+" "+(await res.text()).slice(0,160));
+    var d=await res.json();
+    return (d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||"";
+  }
+  async function callGemini(prompt){
+    if(!S.gKey) throw new Error("Add Gemini key in Settings");
+    var url="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+encodeURIComponent(S.gKey);
+    var res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{role:"user",parts:[{text:sys()+"\n\n"+prompt}]}],generationConfig:{temperature:0.4,maxOutputTokens:4096}}),
+      signal:S.ac?S.ac.signal:undefined});
+    if(!res.ok) throw new Error("Gemini "+res.status+" "+(await res.text()).slice(0,160));
+    var d=await res.json();
+    var parts=d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts;
+    return parts?parts.map(function(p){return p.text}).join(""):"";
+  }
+  function parse(raw){
+    var t=(raw||"").trim();
+    var m=t.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(m) t=m[1].trim();
+    try{return JSON.parse(t)}catch(e){return {thinking:t.slice(0,600),html:"",css:"",js:""}}
+  }
+
+  async function generate(){
+    var prompt=$("prompt").value.trim();
+    if(!prompt||S.busy) return;
+    S.busy=true;S.ac=new AbortController();
+    $("bGen").textContent="…";
+    $("think").textContent="Thinking…";
+    showPanel("thinking");
+    try{
+      var raw=S.model.provider==="GEMINI"?await callGemini(prompt):await callNvidia(prompt);
+      var p=parse(raw);
+      if(p.thinking){$("think").textContent=p.thinking;S.think=p.thinking}
+      if(p.html)S.html=p.html;if(p.css)S.css=p.css;if(p.js)S.js=p.js;
+      showFile(S.file);preview();pushVer(prompt.slice(0,40));
+      showPanel("preview");toast("Done");
+    }catch(e){
+      $("think").textContent="Error: "+e.message+"\n\nOpen Settings and check your API key.";
+      showPanel("thinking");toast("Error");
+    }finally{
+      S.busy=false;S.ac=null;$("bGen").textContent="Generate";
+    }
+  }
+
+  // wire UI
+  document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){showPanel(t.dataset.p)}});
+  document.querySelectorAll(".ctab").forEach(function(t){t.onclick=function(){showFile(t.dataset.f)}});
+  $("ed").oninput=function(){S[S.file]=$("ed").value;preview()};
+  $("bGen").onclick=generate;
+  $("bTpl").onclick=function(){renderTpl();$("mTpl").classList.add("show")};
+  $("bModel").onclick=function(){renderModels();$("mModel").classList.add("show")};
+  $("bSet").onclick=function(){$("nKey").value=S.nKey;$("nUrl").value=S.nUrl;$("gKey").value=S.gKey;$("mSet").classList.add("show")};
+  $("bExp").onclick=function(){$("mExp").classList.add("show")};
+  document.querySelectorAll(".x").forEach(function(b){b.onclick=function(){$(b.dataset.c).classList.remove("show")}});
+  document.querySelectorAll(".modal").forEach(function(m){m.onclick=function(e){if(e.target===m)m.classList.remove("show")}});
+  $("bSave").onclick=function(){
+    S.nKey=$("nKey").value.trim()||S.nKey;S.nUrl=$("nUrl").value.trim()||S.nUrl;S.gKey=$("gKey").value.trim();
+    localStorage.setItem("nKey",S.nKey);localStorage.setItem("nUrl",S.nUrl);localStorage.setItem("gKey",S.gKey);
+    $("mSet").classList.remove("show");toast("Saved");
+  };
+  $("bDl").onclick=function(){
+    var doc="<!DOCTYPE html><html><head><meta charset=UTF-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><style>"+S.css+"</style></head><body>"+S.html+"<script>"+S.js+"<\/script></body></html>";
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([doc],{type:"text/html"}));a.download="export.html";a.click();
+  };
+  $("bCopy").onclick=async function(){
+    try{await navigator.clipboard.writeText("/*HTML*/\n"+S.html+"\n/*CSS*/\n"+S.css+"\n/*JS*/\n"+S.js);toast("Copied")}catch(e){toast("Copy failed")}
+  };
+
+  // boot
+  loadTpl(TPL[0]);
+  toast("AI Builder ready");
+})();
+</script>
 </body>
 </html>
