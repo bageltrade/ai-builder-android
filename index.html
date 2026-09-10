@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Builder — Browser Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <h1>AI Builder</h1>
+          <p class="subtitle">Browser Studio · High Thinking</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btnTemplates" class="btn ghost" title="Templates">Templates</button>
+        <button id="btnModels" class="btn ghost" title="Models">Models</button>
+        <button id="btnSettings" class="btn ghost" title="Settings">Settings</button>
+        <button id="btnExport" class="btn ghost" title="Export">Export</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="sidebar">
+        <div class="model-chip" id="modelChip">
+          <span class="badge" id="modelBadge">120B NIM</span>
+          <span id="modelName">Nemotron 3 Super</span>
+        </div>
+        <div class="status" id="statusText">Ready</div>
+        <div class="viewport-switch">
+          <button data-vp="mobile" class="vp-btn">Mobile</button>
+          <button data-vp="tablet" class="vp-btn">Tablet</button>
+          <button data-vp="desktop" class="vp-btn active">Desktop</button>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <div class="tabs">
+          <button class="tab active" data-tab="preview">Preview</button>
+          <button class="tab" data-tab="code">Code</button>
+          <button class="tab" data-tab="thinking">Thinking</button>
+          <button class="tab" data-tab="versions">Versions</button>
+        </div>
+
+        <div class="tab-panels">
+          <div id="panel-preview" class="panel active">
+            <div class="preview-frame-wrap" id="previewWrap">
+              <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals" title="Live Preview"></iframe>
+            </div>
+          </div>
+          <div id="panel-code" class="panel">
+            <div class="code-tabs">
+              <button class="code-tab active" data-file="html">HTML</button>
+              <button class="code-tab" data-file="css">CSS</button>
+              <button class="code-tab" data-file="js">JS</button>
+            </div>
+            <textarea id="codeEditor" spellcheck="false"></textarea>
+          </div>
+          <div id="panel-thinking" class="panel">
+            <pre id="thinkingLog" class="thinking-log">No reasoning yet. Submit a prompt to see High Thinking steps.</pre>
+          </div>
+          <div id="panel-versions" class="panel">
+            <div id="versionsList" class="versions-list">
+              <p class="muted">Versions will appear here after you generate.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prompt-bar">
+          <textarea id="promptInput" placeholder="Describe the app or game you want… e.g. retro synth drum machine with neon pads" rows="2"></textarea>
+          <button id="btnGenerate" class="btn primary">Generate</button>
+          <button id="btnStop" class="btn danger hidden">Stop</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Templates modal -->
+  <div id="modalTemplates" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Quick Templates</h2>
+        <button class="close-modal" data-close="modalTemplates">×</button>
+      </div>
+      <div id="templatesGrid" class="templates-grid"></div>
+    </div>
+  </div>
+
+  <!-- Models modal -->
+  <div id="modalModels" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>AI Engine</h2>
+        <button class="close-modal" data-close="modalModels">×</button>
+      </div>
+      <div id="modelsList" class="models-list"></div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="modalSettings" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="close-modal" data-close="modalSettings">×</button>
+      </div>
+      <label>NVIDIA NIM API Key
+        <input id="nvidiaKey" type="password" placeholder="nvapi-…" />
+      </label>
+      <label>NVIDIA Base URL
+        <input id="nvidiaUrl" type="text" placeholder="https://integrate.api.nvidia.com/v1" />
+      </label>
+      <label>Gemini API Key
+        <input id="geminiKey" type="password" placeholder="AIza…" />
+      </label>
+      <button id="btnSaveSettings" class="btn primary">Save</button>
+    </div>
+  </div>
+
+  <!-- Export modal -->
+  <div id="modalExport" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Export</h2>
+        <button class="close-modal" data-close="modalExport">×</button>
+      </div>
+      <button id="btnDownloadHtml" class="btn primary block">Download single HTML</button>
+      <button id="btnCopyAll" class="btn ghost block">Copy all code</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
